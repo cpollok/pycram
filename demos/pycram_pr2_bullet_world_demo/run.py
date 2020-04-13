@@ -1,4 +1,4 @@
 import sys
-sys.path.append('/home/jonas/Documents/Studium/BA/pycram/src/')
+sys.path.append('/home/chris/mt/pycram-ws/src/pycram/pycram/src')
 import macropy.activate
 import demo
