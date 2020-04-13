@@ -1,3 +1,4 @@
+import rospkg
 import process_modules
 import motion_designators # Needs to be imported to load Process Modules and designator solutions
 import pycram.bullet_world_reasoning as btr
@@ -8,13 +9,14 @@ from pycram.language import macros, par
 
 world = BulletWorld()
 world.set_gravity([0, 0, -9.8])
-plane = Object("floor", "environment", "../resources/plane.urdf", world=world)
-robot = Object("pr2", "robot", "../resources/pr2.urdf")
-kitchen = Object("kitchen", "environment", "../resources/kitchen.urdf")
-milk = Object("milk", "milk", "../resources/milk.stl", [1.3, 1, 1])
-spoon = Object("spoon", "spoon", "../resources/spoon.stl", [1.35, 0.7, 0.8])
-cereal = Object("cereal", "cereal", "../resources/breakfast_cereal.stl", [1.3, 0.6, 1])
-bowl = Object("bowl", "bowl", "../resources/bowl.stl", [1.3, 0.8, 1])
+resources_path = rospkg.RosPack().get_path("pycram") + "/resources"
+plane = Object("floor", "environment", resources_path + "/plane.urdf", world=world)
+robot = Object("pr2", "robot", resources_path + "/pr2.urdf")
+kitchen = Object("kitchen", "environment", resources_path + "/kitchen.urdf")
+milk = Object("milk", "milk", resources_path + "/milk.stl", [1.3, 1, 1])
+spoon = Object("spoon", "spoon", resources_path + "/spoon.stl", [1.35, 0.7, 0.8])
+cereal = Object("cereal", "cereal", resources_path + "/breakfast_cereal.stl", [1.3, 0.6, 1])
+bowl = Object("bowl", "bowl", resources_path + "/bowl.stl", [1.3, 0.8, 1])
 BulletWorld.robot = robot
 
 targets = {
