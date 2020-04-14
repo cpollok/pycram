@@ -1,4 +1,8 @@
+<<<<<<< HEAD:demos/pycram_pr2_bullet_world_demo/demo.py
 import rospkg
+=======
+import os
+>>>>>>> 0175e90... Rework repository structure.:pycram_pr2_bullet_world_demo/scripts/demo.py
 import process_modules
 import motion_designators # Needs to be imported to load Process Modules and designator solutions
 import pycram.bullet_world_reasoning as btr
@@ -7,8 +11,11 @@ from pycram.process_module import ProcessModule
 from pycram.bullet_world import BulletWorld, Object
 from pycram.language import macros, par
 
+resources_path = os.path.join(os.path.dirname(__file__), '..', 'resources')
+print(resources_path)
 world = BulletWorld()
 world.set_gravity([0, 0, -9.8])
+<<<<<<< HEAD:demos/pycram_pr2_bullet_world_demo/demo.py
 resources_path = rospkg.RosPack().get_path("pycram") + "/resources"
 plane = Object("floor", "environment", resources_path + "/plane.urdf", world=world)
 robot = Object("pr2", "robot", resources_path + "/pr2.urdf")
@@ -17,6 +24,15 @@ milk = Object("milk", "milk", resources_path + "/milk.stl", [1.3, 1, 1])
 spoon = Object("spoon", "spoon", resources_path + "/spoon.stl", [1.35, 0.7, 0.8])
 cereal = Object("cereal", "cereal", resources_path + "/breakfast_cereal.stl", [1.3, 0.6, 1])
 bowl = Object("bowl", "bowl", resources_path + "/bowl.stl", [1.3, 0.8, 1])
+=======
+plane = Object("floor", "environment", os.path.join(resources_path, "plane.urdf"), world=world)
+robot = Object("pr2", "robot", os.path.join(resources_path, "pr2.urdf"))
+kitchen = Object("kitchen", "environment", os.path.join(resources_path, "kitchen.urdf"))
+milk = Object("milk", "milk", os.path.join(resources_path, "milk.stl"), [1.3, 1, 1])
+spoon = Object("spoon", "spoon", os.path.join(resources_path, "spoon.stl"), [1.35, 0.7, 0.8])
+cereal = Object("cereal", "cereal", os.path.join(resources_path, "breakfast_cereal.stl"), [1.3, 0.6, 1])
+bowl = Object("bowl", "bowl", os.path.join(resources_path, "bowl.stl"), [1.3, 0.8, 1])
+>>>>>>> 0175e90... Rework repository structure.:pycram_pr2_bullet_world_demo/scripts/demo.py
 BulletWorld.robot = robot
 
 targets = {
