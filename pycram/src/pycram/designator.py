@@ -249,6 +249,17 @@ class Designator:
 
 		return dictionary
 
+	def rename_prop(self, old, new):
+		old_value = self.prop_value(old)
+		if old_value is not None:
+			new_desig = self.copy([(new, old_value)])
+			# del(new_desig._data[old])
+			new_desig.equate(self)
+		else:
+			raise DesignatorError("Renaming doesn't work.")
+		return self.current()
+
+
 class MotionDesignator(Designator):
 	"""
 	Implementation of motion designators.
@@ -306,3 +317,9 @@ class MotionDesignator(Designator):
 			return desig
 
 		return None
+
+class LocationDesignator(Designator):
+	pass
+
+class ObjectDesignator(Designator):
+	pass
