@@ -66,7 +66,7 @@ def place_object(object_designator, arm,
                  **kwargs):
     ActionDesignator(MoveArmsInSequenceDescription(left_reach_poses, right_reach_poses)).perform()
     ActionDesignator(MoveArmsInSequenceDescription(left_place_poses, right_place_poses)).perform()
-    ActionDesignator(ReleaseActionDescription(arm, object_designator))
+    ActionDesignator(ReleaseActionDescription(arm, object_designator)).perform()
     ActionDesignator(MoveArmsInSequenceDescription(left_retract_poses, right_retract_poses)).perform()
 
 @with_tree
@@ -82,7 +82,7 @@ def transport_object(object_designator, arm, target_location):
     ActionDesignator(NavigateDescription(object_designator=object_designator)).perform()
     ActionDesignator(PickUpDescription(object_designator, arm)).perform()
     ActionDesignator(MoveArmsIntoConfigurationDescription(Arms.BOTH)).perform()
-    ActionDesignator(NavigateDescription(target_location=target_location))
+    ActionDesignator(NavigateDescription(target_location=target_location)).perform()
     ActionDesignator(PlaceDescription(object_designator, target_location, arm)).perform()
 
 @with_tree
