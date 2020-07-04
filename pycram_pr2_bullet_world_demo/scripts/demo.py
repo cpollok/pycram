@@ -70,7 +70,7 @@ def move_object(object_type, target, arm):
     targets[object_type][2] = True
 
 
-object_types = ['milk', 'bowl', 'cereal', 'spoon']
-for i in range(0, 4):
+object_types = ['milk', 'bowl', 'cereal']
+for i in range(0, 3):
     if not targets[object_types[i]][2]:
         move_object(object_types[i], targets[object_types[i]][0], targets[object_types[i]][1])
