@@ -16,6 +16,7 @@ robot = Object("pr2", "robot", os.path.join(resources_path, "pr2.urdf"))
 kitchen = Object("kitchen", "environment", os.path.join(resources_path, "kitchen.urdf"))
 milk = Object("milk", "milk", os.path.join(resources_path, "milk.stl"), [1.3, 1, 1])
 spoon = Object("spoon", "spoon", os.path.join(resources_path, "spoon.stl"), [1.35, 0.7, 0.8])
+kitchen.attach(spoon, link="sink_area_left_upper_drawer_main")
 cereal = Object("cereal", "cereal", os.path.join(resources_path, "breakfast_cereal.stl"), [1.3, 0.6, 1])
 bowl = Object("bowl", "bowl", os.path.join(resources_path, "bowl.stl"), [1.3, 0.8, 1])
 BulletWorld.robot = robot
@@ -37,6 +38,7 @@ def move_object(object_type, target, arm):
     if object_type == "spoon":
         ProcessModule.perform(MotionDesignator([('type', 'accessing'), ('drawer-joint', 'sink_area_left_upper_drawer_main_joint'), ('drawer-handle', 'sink_area_left_upper_drawer_handle'), ('arm', 'left'), ('distance', 0.3), ('part-of', kitchen)]))
 
+
     ProcessModule.perform(MotionDesignator([('type', 'looking'), ('target', [1.3, 0.6, 1])]))
 
     det_obj = ProcessModule.perform(MotionDesignator([('type', 'detecting'), ('object', object_type)]))
@@ -48,9 +50,12 @@ def move_object(object_type, target, arm):
         move_object(block_new[0].type, targets[block_new[0].type][0], targets[block_new[0].type][1])
         ProcessModule.perform(MotionDesignator([('type', 'moving'), ('target', [0.65, 0.7, 0]), ('orientation', [0, 0, 0, 1])]))
 
+    if det_obj.type == "spoon":
+        kitchen.detach(det_obj)
+
     ProcessModule.perform(MotionDesignator([('type', 'pick-up'), ('object', det_obj), ('arm', arm)]))
 
-    ProcessModule.perform(MotionDesignator([('type', 'move-arm-joints'), ('right-arm', 'park')]))
+    ProcessModule.perform(MotionDesignator([('type', 'move-arm-joints'), ('left-arm', 'park'), ('right-arm', 'park')]))
 
     ProcessModule.perform(MotionDesignator([('type', 'moving'), ('target', [-0.3, 1, 0]), ('orientation', [0, 0, 1, 0])]))
 
@@ -60,8 +65,8 @@ def move_object(object_type, target, arm):
     ProcessModule.perform(MotionDesignator([('type', 'move-arm-joints'), ('left-arm', 'park'), ('right-arm', 'park')]))
     print("placed: ", object_type)
 
-    if not btr.stable(det_obj):
-        raise btr.ReasoningError
+    #if not btr.stable(det_obj):
+        #raise btr.ReasoningError
     targets[object_type][2] = True
 
 
@@ -69,4 +74,3 @@ object_types = ['milk', 'bowl', 'cereal', 'spoon']
 for i in range(0, 4):
     if not targets[object_types[i]][2]:
         move_object(object_types[i], targets[object_types[i]][0], targets[object_types[i]][1])
-
