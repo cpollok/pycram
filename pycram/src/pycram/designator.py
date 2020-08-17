@@ -253,7 +253,7 @@ class Designator:
 		old_value = self.prop_value(old)
 		if old_value is not None:
 			new_desig = self.copy([(new, old_value)])
-			# del(new_desig._data[old])
+			# del(new_desig._properties[old])
 			new_desig.equate(self)
 		else:
 			raise DesignatorError("Renaming doesn't work.")
@@ -318,8 +318,13 @@ class MotionDesignator(Designator):
 
 		return None
 
+	def __str__(self):
+		return "MotionDesignator({})".format(self._properties)
+
 class LocationDesignator(Designator):
-	pass
+	def __str__(self):
+		return "LocationDesignator({})".format(self._properties)
 
 class ObjectDesignator(Designator):
-	pass
+	def __str__(self):
+		return "ObjectDesignator({})".format(self._properties)

@@ -8,7 +8,6 @@ from pycram.bullet_world import BulletWorld, Object
 from pycram.language import macros, par
 
 resources_path = os.path.join(os.path.dirname(__file__), '..', 'resources')
-print(resources_path)
 world = BulletWorld()
 world.set_gravity([0, 0, -9.8])
 plane = Object("floor", "environment", os.path.join(resources_path, "plane.urdf"), world=world)

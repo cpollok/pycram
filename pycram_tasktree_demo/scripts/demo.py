@@ -103,20 +103,38 @@ import graphviz as gv
 #
 # dot.render("out/test.dot", view=True)
 from pycram.action_designator import PickUpDescription, ActionDesignator, MoveArmsInSequenceDescription, TransportObjectDescription
-from pycram.designator import Designator
+from pycram.designator import Designator, ObjectDesignator
 from pycram.pr2_description import Arms
 import pycram.mobile_pick_place_resolution
+from pycram.task import move_node_to_path
 
 # desc = MoveArmsInSequenceDescription(["somewhere"], None)
 # desig = ActionDesignator(desc)
 # desig.perform()
 
 # desc = PickUpDescription(Designator([("name", "TestObj"), ("pose", "<Object Pose>")]), Arms.LEFT)
-desc = TransportObjectDescription(Designator([("name", "TestObj"), ("pose", "<Object Pose>")]),
+desc = TransportObjectDescription(ObjectDesignator([("name", "TestObj"), ("pose", "<Object Pose>")]),
                                   Arms.LEFT, "Somewhere else")
 desig = ActionDesignator(desc)
 desig.perform()
 
-tt = pycram.task.TASK_TREE
+tt : TaskTreeNode = pycram.task.TASK_TREE
+# dot = tt.generate_dot()
+# dot.render("out/test.dot", view=True)
+
+# node = tt.get_child_by_path("place_object.0/move_arms.1")
+# move_node_to_path(node.copy(), "navigate_near_object", -1)
+# move_node_to_path(node.copy(), "navigate_near_object", -1)
+# move_node_to_path(node.copy(), "navigate_near_object", -1)
+# move_node_to_path(node.copy(), "navigate_near_object", -1)
+# tt.get_child_by_path("move_arms").delete()
+# tt.get_child_by_path("navigate_near_object").delete_previous(True)
+
+move_node_to_path(tt.get_child_by_path("pickup_object"), "place_object", 1)
+
+tt : TaskTreeNode = pycram.task.TASK_TREE
 dot = tt.generate_dot()
-dot.render("out/test.dot", view=True)
+dot.render("out/test2.dot", view=True)
+# tt.execute()
+# dot = tt.generate_dot()
+# dot.render("out/test2.dot", view=True)

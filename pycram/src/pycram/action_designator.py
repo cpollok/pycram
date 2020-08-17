@@ -1,3 +1,20 @@
+__all__ = ["ActionDesignator",
+           "MoveTorsoActionDescription",
+           "SetGripperActionDescription",
+           "ReleaseActionDescription",
+           "GripActionDescription",
+           "MoveArmsInSequenceDescription",
+           "MoveArmsIntoConfigurationDescription",
+           "ParkArmsDescription",
+           "PickUpDescription",
+           "PlaceDescription",
+           "NavigateDescription",
+           "TransportObjectDescription",
+           "LookAtActionDescription",
+           "DetectActionDescription",
+           "OpenActionDescription",
+           "CloseActionDescription"]
+
 from typing import List
 from pycram.task import with_tree
 
@@ -90,12 +107,14 @@ class PlaceDescription(ActionDesignatorDescription):
         self.right_retract_poses = []
 
 class NavigateDescription(ActionDesignatorDescription):
-    def __init__(self, object_designator=None, target_location=None):
+    def __init__(self, object_designator=None, target_location=None, target_position=None, target_orientation=None):
         if object_designator and target_location:
             print("Warning: When providing both an object and a target location to navigate, only the object designator"
                   "will be considered.")
         self.object_designator = object_designator
         self.target_location = target_location
+        self.target_position = target_position
+        self.target_orientation = target_orientation
 
 class TransportObjectDescription(ActionDesignatorDescription):
     def __init__(self, object_designator, arm, target_location):
@@ -111,3 +130,16 @@ class DetectActionDescription(ActionDesignatorDescription):
     def __init__(self, object_designator):
         self.object_designator = object_designator
 
+class OpenActionDescription(ActionDesignatorDescription):
+    def __init__(self, object_designator, arm, distance):
+        self.object_designator = object_designator
+        self.arm = arm
+        self.distance = distance
+
+class CloseActionDescription(ActionDesignatorDescription):
+    def __init__(self, object_designator, arm):
+        self.object_designator = object_designator
+        self.arm = arm
+
+class TestDescription(ActionDesignatorDescription):
+    pass
