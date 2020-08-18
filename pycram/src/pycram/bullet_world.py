@@ -84,13 +84,21 @@ class BulletWorld:
         """
         Returns the id of the saved state of the BulletWorld
         """
-        return p.saveState(self.client_id)
+        objects2attached = {}
+        for o in self.objects:
+            objects2attached[o] = (o.attachments.copy(), o.cids.copy())
+        return p.saveState(self.client_id), objects2attached
 
-    def restore_state(self, state):
+    def restore_state(self, state, objects2attached={}):
         """
         Restores the state of the BulletWorld according to the given state id
         """
         p.restoreState(state, physicsClientId=self.client_id)
+        for obj in self.objects:
+            try:
+                obj.attachments, obj.cids = objects2attached[obj]
+            except KeyError:
+                continue
 
     def copy(self):
         """
@@ -208,6 +216,15 @@ class Object:
         del self.cids[object]
         del object.cids[self]
         self.world.detachment_event(self, [self, object])
+
+    def detach_all(self):
+        """
+        Detach all objects attached to this object.
+        :return:
+        """
+        attachments = self.attachments.copy()
+        for att in attachments.keys():
+            self.detach(att)
 
     def get_position(self):
         return p.getBasePositionAndOrientation(self.id, physicsClientId=self.world.client_id)[0]

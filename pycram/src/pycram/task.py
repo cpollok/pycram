@@ -14,6 +14,7 @@ from typing import List, Dict, Optional, Tuple
 from enum import Enum, auto
 from functools import wraps
 from pycram.taskpath import TaskPath
+from pycram.bullet_world import BulletWorld
 
 TASK_TREE = None
 CURRENT_TASK_TREE_NODE = None
@@ -392,6 +393,7 @@ class SimulatedTaskTree:
         global CURRENT_TASK_TREE_NODE
         self.suspended_tree = TASK_TREE
         self.suspended_current_node = CURRENT_TASK_TREE_NODE
+        self.world_state, self.objects2attached = BulletWorld.current_bullet_world.save_state()
         self.simulated_root = TaskTreeNode(code=Code("Simulation"), path="dream")
         TASK_TREE = self.simulated_root
         CURRENT_TASK_TREE_NODE = self.simulated_root
@@ -400,9 +402,9 @@ class SimulatedTaskTree:
     def __exit__(self, exc_type, exc_val, exc_tb):
         global TASK_TREE
         global CURRENT_TASK_TREE_NODE
-        # TASK_TREE.generate_dot().render("out/dream.dot", view=True)
         TASK_TREE = self.suspended_tree
         CURRENT_TASK_TREE_NODE = self.suspended_current_node
+        BulletWorld.current_bullet_world.restore_state(self.world_state, self.objects2attached)
 
     def get_successful_params_ctx_after(self, name, ctx):
         # This only works for very specific contexts

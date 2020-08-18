@@ -136,10 +136,12 @@ def introspection_demo():
                 raise f
         print(st.get_successful_params_ctx_after("navigate", "detect"))
         success_params = st.get_successful_params_ctx_after("navigate", "detect")
+        time.sleep(3)
+    time.sleep(3)
     ActionDesignator(NavigateDescription(target_position=success_params[0][0][0])).perform()
-    # ActionDesignator(LookAtActionDescription(target=bowl.get_position())).perform()
-    # obj = ActionDesignator(DetectActionDescription(ObjectDesignator([('type', 'bowl')]))).perform()
-    # ActionDesignator(PickUpDescription(obj, arm=Arms.RIGHT)).perform()
+    ActionDesignator(LookAtActionDescription(target=bowl.get_position())).perform()
+    obj = ActionDesignator(DetectActionDescription(ObjectDesignator([('type', 'bowl')]))).perform()
+    ActionDesignator(PickUpDescription(obj, arm=Arms.RIGHT)).perform()
 
 import pycram
 from pycram.task import TaskTreeNode
