@@ -131,7 +131,7 @@ class DetectActionDescription(ActionDesignatorDescription):
         self.object_designator = object_designator
 
 class OpenActionDescription(ActionDesignatorDescription):
-    def __init__(self, object_designator, arm, distance):
+    def __init__(self, object_designator, arm, distance=None):
         self.object_designator = object_designator
         self.arm = arm
         self.distance = distance

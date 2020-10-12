@@ -41,7 +41,7 @@ def pr2_motion_designators(desig):
     # Type: opening
     if desig.check_constraints([('type', 'opening-prismatic'), 'joint', 'handle', 'part-of']):
         if desig.check_constraints([('arm', 'right')]):
-            if desig.check_constraints('distance'):
+            if desig.check_constraints(['distance']):
                 solutions.append(desig.make_dictionary(
                     [('cmd', 'open-prismatic'), 'joint', 'handle', ('gripper', 'r_gripper_tool_frame'),
                      'distance', 'part-of']))
@@ -50,7 +50,7 @@ def pr2_motion_designators(desig):
                     [('cmd', 'open-prismatic'), 'joint', 'handle', ('gripper', 'r_gripper_tool_frame'),
                      ('distance', 0.3), 'part-of']))
         else:
-            if desig.check_constraints('distance'):
+            if desig.check_constraints(['distance']):
                 solutions.append(desig.make_dictionary(
                     [('cmd', 'open-prismatic'), 'joint', 'handle', ('gripper', 'l_gripper_tool_frame'),
                      'distance', 'part-of']))
@@ -62,7 +62,7 @@ def pr2_motion_designators(desig):
     # Type: closing
     if desig.check_constraints([('type', 'closing-prismatic'), 'joint', 'handle', 'part-of']):
         if desig.check_constraints([('arm', 'right')]):
-            if desig.check_constraints('distance'):
+            if desig.check_constraints(['distance']):
                 solutions.append(desig.make_dictionary(
                     [('cmd', 'close-prismatic'), 'joint', 'handle', ('gripper', 'r_gripper_tool_frame'),
                      'distance', 'part-of']))

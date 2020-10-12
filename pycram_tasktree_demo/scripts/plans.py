@@ -3,9 +3,11 @@ from pycram.process_module import ProcessModule
 from pycram.designator import MotionDesignator, ObjectDesignator
 from pycram.action_designator import *
 from pycram.pr2_description import Arms
+from pycram.pr2_knowledge import reach_position_generator, container_opening_distance_generator,\
+    object_fetching_location_generator, free_arms
 
 # Only needed for hack :/
-from pycram.bullet_world import BulletWorld
+from pycram.bullet_world import BulletWorld, filter_contact_points
 
 @with_tree
 def open_gripper(gripper):
@@ -21,17 +23,21 @@ def close_gripper(gripper):
 def pick_up(arm, btr_object):
     print("Picking up {} with {}.".format(btr_object, arm))
     motion_arm = "left" if arm is Arms.LEFT else "right"
-    # Hack to detach from kitchen.. (Should go into process module maybe)
-    btr_object.prop_value('bullet_obj').detach(BulletWorld.current_bullet_world.get_objects_by_name("kitchen")[0])
+    # TODO: Hack to detach from kitchen.. (Should go into process module maybe)
+    try:
+        btr_object.prop_value('bullet_obj').detach(BulletWorld.current_bullet_world.get_objects_by_name("kitchen")[0])
+    except KeyError:
+        print("Not attached to anything!")
     ProcessModule.perform(MotionDesignator([('type', 'pick-up'), ('object', btr_object), ('arm', motion_arm)]))
-    ActionDesignator(ParkArmsDescription(arm=arm)).perform()
+    # ActionDesignator(ParkArmsDescription(arm=arm)).perform()
 
 @with_tree
 def place(arm, btr_object, target):
     print("Placing {} with {} at {}.".format(btr_object, arm, target))
     motion_arm = "left" if arm is Arms.LEFT else "right"
     ProcessModule.perform(MotionDesignator([('type', 'place'), ('object', btr_object), ('arm', motion_arm), ('target', target)]))
-    ActionDesignator(ParkArmsDescription(arm=arm)).perform()
+    if filter_contact_points(btr_object.prop_value("bullet_obj").contact_points_simulated(), [0,1,2]):
+        raise PlanFailure()
 
 @with_tree
 def navigate(target, orientation=[0, 0, 0, 1]):
@@ -72,22 +78,48 @@ def seal():
 
 @with_tree
 def transport(object_designator, arm, target_location):
-    fetch_robot_position = [0.7, 0.9, 0]
-    fetch_object_position = [1.38, 0.7, 0.75] # [1.3, 0.9, 1]
-    # deliver_robot_position = [0.7, -0.9, 0]
-    deliver_robot_position = [-1.8, 1, 0]
-    ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
-    # this part has to be in fh to be retried
-    ActionDesignator(NavigateDescription(target_position=fetch_robot_position)).perform()
-    ActionDesignator(LookAtActionDescription(target=fetch_object_position)).perform()
-    obj = ActionDesignator(DetectActionDescription(object_designator)).perform()
+    ## Setup TODO: Put this into resolution?
+    fetch_object_location_generator = object_fetching_location_generator(object_designator)
+    fetch_object_location = next(fetch_object_location_generator)
+    if type(fetch_object_location) is ObjectDesignator:
+        fetch_robot_position_generator = reach_position_generator(fetch_object_location)
+    else:
+        fetch_robot_position_generator = reach_position_generator(object_designator)
+    pos, rot = next(fetch_robot_position_generator)
 
-    # end of part
-    ActionDesignator(PickUpDescription(obj, arm)).perform()
+    ## Fetch
+    # Navigate
     ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
-    ActionDesignator(NavigateDescription(target_position=deliver_robot_position)).perform()
+    ActionDesignator(NavigateDescription(target_position=pos, target_orientation=rot)).perform()
+
+    # Access
+    if type(fetch_object_location) is ObjectDesignator:
+        ActionDesignator(OpenActionDescription(fetch_object_location, arm)).perform()
+        ActionDesignator(ParkArmsDescription(arm)).perform()
+
+    # Pick Up
+    ActionDesignator(LookAtActionDescription(fetch_object_location)).perform()
+    obj = ActionDesignator(DetectActionDescription(object_designator)).perform()
+    ActionDesignator(PickUpDescription(obj, arm=arm)).perform()
+    ActionDesignator(ParkArmsDescription(arm)).perform()
+
+    # Seal
+    if type(fetch_object_location) is ObjectDesignator:
+        arms_free = free_arms()
+        if arms_free:
+            ActionDesignator(CloseActionDescription(fetch_object_location, arms_free[0])).perform()
+            ActionDesignator(ParkArmsDescription(arms_free[0])).perform()
+
+    ## Deliver
+    # Navigate
+    deliver_robot_position_generator = reach_position_generator(target_location)
+    pos, rot = next(deliver_robot_position_generator) #[-1.8, 1, 0], [0,0,0,1]
+    ActionDesignator(NavigateDescription(target_position=pos, target_orientation=rot)).perform()
+
+    # Place
     ActionDesignator(PlaceDescription(obj, target_location=target_location, arm=arm)).perform()
-    ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
+    ActionDesignator(ParkArmsDescription(arm)).perform()
+
 
 def get_container_joint_and_handle(container_desig):
     name = container_desig.prop_value('name')
@@ -112,6 +144,7 @@ def open_container(object_designator, arm, distance):
     joint, handle = get_container_joint_and_handle(object_designator)
     arm = "left" if arm == Arms.LEFT else "right"
     environment = object_designator.prop_value('part-of')
+    print("Plan distance: " + str(distance))
     ProcessModule.perform(MotionDesignator(
         [('type', motion_type), ('joint', joint),
          ('handle', handle), ('arm', arm), ('distance', distance),

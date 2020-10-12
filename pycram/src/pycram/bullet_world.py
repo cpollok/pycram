@@ -40,7 +40,7 @@ class BulletWorld:
         self.manipulation_event = Event()
         self._gui_thread = Gui(self, type)
         self._gui_thread.start()
-        time.sleep(0.1)
+        time.sleep(1) # 0.1
         self.last_bullet_world = BulletWorld.current_bullet_world
         BulletWorld.current_bullet_world = self
 
@@ -324,6 +324,18 @@ class Object:
     def get_joint_state(self, joint_name):
         return p.getJointState(self.id, self.joints[joint_name], physicsClientId=self.world.client_id)[0]
 
+    def contact_points(self):
+        return p.getContactPoints(self.id)
+
+    def contact_points_simulated(self):
+        s = self.world.save_state()
+        p.stepSimulation(self.world.client_id)
+        contact_points = self.contact_points()
+        self.world.restore_state(*s)
+        return contact_points
+
+def filter_contact_points(contact_points, exclude_ids):
+    return list(filter(lambda cp: cp[2] not in exclude_ids, contact_points))
 
 def _load_object(name, path, position, orientation, world, color):
     """

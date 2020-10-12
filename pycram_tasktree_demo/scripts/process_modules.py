@@ -147,9 +147,12 @@ class PR2EnvironmentManipulation(ProcessModule):
     """
     def _execute(self, desig):
         solution = desig.reference()
+        kitchen = solution['part-of']
+        if type(kitchen) is str:
+            kitchen = BulletWorld.current_bullet_world.get_objects_by_name(kitchen)[0]
 
         if solution['cmd'] == 'open-prismatic' or solution['cmd'] == 'close-prismatic':
-            kitchen = solution['part-of']
+            # kitchen = solution['part-of']
             robot = BulletWorld.robot
             gripper = solution['gripper']
             container_handle = solution['handle']
@@ -161,6 +164,7 @@ class PR2EnvironmentManipulation(ProcessModule):
             handle_pose = kitchen.get_link_position(container_handle)
             if solution['cmd'] == 'open-prismatic':
                 distance = solution['distance']
+                print("Process module distance: " + str(distance))
                 new_pose = [handle_pose[0] - distance, handle_pose[1], handle_pose[2]]
                 inv = p.calculateInverseKinematics(robot.id, robot.get_link_id(gripper), new_pose)
                 _apply_ik(robot, inv)
@@ -174,7 +178,7 @@ class PR2EnvironmentManipulation(ProcessModule):
             time.sleep(0.2)
 
         if solution['cmd'] == "open-rotational":
-            kitchen = solution['part-of']
+            # kitchen = solution['part-of']
             robot = BulletWorld.robot
             gripper = solution['gripper']
             container_handle = solution['handle']
@@ -190,7 +194,7 @@ class PR2EnvironmentManipulation(ProcessModule):
             _apply_ik(robot, inv)
 
         if solution['cmd'] == "close-rotational":
-            kitchen = solution['part-of']
+            # kitchen = solution['part-of']
             robot = BulletWorld.robot
             gripper = solution['gripper']
             container_handle = solution['handle']
@@ -204,6 +208,7 @@ class PR2EnvironmentManipulation(ProcessModule):
             handle_pose = kitchen.get_link_position(container_handle)
             inv = p.calculateInverseKinematics(robot.id, robot.get_link_id(gripper), handle_pose)
             _apply_ik(robot, inv)
+        time.sleep(0.2)
 
 class Pr2ParkArms(ProcessModule):
     """
@@ -308,7 +313,7 @@ class Pr2MoveJoints(ProcessModule):
             if type(left_arm_poses) == dict:
                 for joint, pose in left_arm_poses.items():
                     robot.set_joint_state(joint, pose)
-            elif type(right_arm_poses) == str and left_arm_poses == "park":
+            elif type(left_arm_poses) == str and left_arm_poses == "park":
                 _park_arms("left")
 
             time.sleep(0.5)

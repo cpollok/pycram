@@ -1,10 +1,11 @@
 from pycram.pr2_description import Arms, Grasp
-from pycram.designator import DesignatorError
+from pycram.designator import DesignatorError, ObjectDesignator
 from pycram.action_designator import SetGripperActionDescription, PickUpDescription, PlaceDescription, \
     NavigateDescription, ParkArmsDescription, DetectActionDescription, LookAtActionDescription, \
     TransportObjectDescription, OpenActionDescription, CloseActionDescription, TestDescription
 from plans import open_gripper, close_gripper, pick_up, place, navigate, park_arms, detect, look_at, transport, \
     open_container, close_container, test_plan
+from pycram.bullet_world import BulletWorld
 
 def ground_set_gripper(self):
     if self.opening == 0:
@@ -35,7 +36,10 @@ def ground_place(self):
     return super(PlaceDescription, self).ground()
 
 def ground_navigate(self : NavigateDescription):
-    self.function = lambda : navigate(self.target_position)
+    if self.target_orientation:
+        self.function = lambda : navigate(self.target_position, self.target_orientation)
+    else:
+        self.function = lambda : navigate(self.target_position)
     return super(NavigateDescription, self).ground()
 
 def ground_park_arms(self : ParkArmsDescription):
@@ -49,6 +53,17 @@ def ground_detect(self):
 def ground_look_at(self):
     if isinstance(self.target, list) or isinstance(self.target, tuple):
         self.function = lambda : look_at(self.target)
+    elif isinstance(self.target, ObjectDesignator):
+        object_name = self.target.prop_value('name')
+        if object_name is 'iai_fridge':
+            pos = [0.95, -0.9, 0.8]
+        elif object_name is 'sink_area_left_upper_drawer':
+            pos = [1.0, 0.7, 0.75]
+        elif object_name is 'sink_area_left_middle_drawer':
+            pos = [1.0, 0.925, 0.5]
+        else:
+            raise DesignatorError()
+        self.function = lambda : look_at(pos)
     else:
         raise DesignatorError()
     return super(LookAtActionDescription, self).ground()
@@ -58,6 +73,11 @@ def ground_transport(self:TransportObjectDescription):
     return super(TransportObjectDescription, self).ground()
 
 def ground_open(self:OpenActionDescription):
+    if not self.distance:
+        if self.object_designator.prop_value('type') is 'fridge':
+            self.distance = 1.0
+        else:
+            self.distance = 0.4
     self.function = lambda : open_container(self.object_designator, self.arm, self.distance)
     return super(OpenActionDescription, self).ground()
 

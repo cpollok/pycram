@@ -9,6 +9,7 @@ GeneratorList -- implementation of generator list wrappers.
 TODO
 """
 import time
+import pybullet
 from graphviz import Digraph
 from typing import List, Dict, Optional, Tuple
 from enum import Enum, auto
@@ -387,6 +388,17 @@ class TaskTreeNode:
         if inclusive:
             self.delete()
 
+    def get_successful_params_ctx_after(self, name, ctx):
+        params = []
+        noi = None  # Node of Interest
+        for c in self.gen_children_list():
+            if c.code.function.__name__ == name and c.status == TaskStatus.SUCCEEDED:
+                noi = c
+            if noi and c.code.function.__name__ == ctx and c.status == TaskStatus.SUCCEEDED:
+                params.append(noi.params())
+                noi = None
+        return params
+
 class SimulatedTaskTree:
     def __enter__(self):
         global TASK_TREE
@@ -397,6 +409,8 @@ class SimulatedTaskTree:
         self.simulated_root = TaskTreeNode(code=Code("Simulation"), path="dream")
         TASK_TREE = self.simulated_root
         CURRENT_TASK_TREE_NODE = self.simulated_root
+        pybullet.addUserDebugText("Simulating...", [0, 0, 1.75], textColorRGB=[0, 0, 0],
+                                  parentObjectUniqueId=1, lifeTime=0)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -405,6 +419,7 @@ class SimulatedTaskTree:
         TASK_TREE = self.suspended_tree
         CURRENT_TASK_TREE_NODE = self.suspended_current_node
         BulletWorld.current_bullet_world.restore_state(self.world_state, self.objects2attached)
+        pybullet.removeAllUserDebugItems()
 
     def get_successful_params_ctx_after(self, name, ctx):
         # This only works for very specific contexts
