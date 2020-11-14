@@ -475,6 +475,9 @@ def move_node_to_path(node, path, where=1):
     global TASK_TREE
     node_at_path = TASK_TREE.get_child_by_path(path)
     node_copy = node.copy()
+    for c in node_copy.gen_children_list():
+        c.parent = None
+    node_copy.children = []
     if where==-1:
         node.delete()
         node_at_path.insert_before(node_copy)
@@ -482,9 +485,11 @@ def move_node_to_path(node, path, where=1):
         node.delete()
         node_at_path.insert_after(node_copy)
     elif where==0:
+        node.delete()
         node_at_path.parent.replace_child(node_at_path, node_copy)
     else:
         print("WARN - Moving node: where parameter is not properly set.")
+        return
     return node_copy
 
 def get_successful_params(nodes : List[TaskTreeNode]):
@@ -495,7 +500,7 @@ def get_successful_params(nodes : List[TaskTreeNode]):
     return p
 
 def with_tree(fun):
-    @wraps(fun)
+    @wraps(fun)  # TODO: Check if this is necessary..
     def handle_tree(*args, **kwargs):
         global TASK_TREE
         global CURRENT_TASK_TREE_NODE

@@ -91,9 +91,12 @@ def introspection_demo(view=False):
                 continue
             else:
                 raise f
-    previous_tree = pycram.task.TASK_TREE
     ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
-    pycram.task.TASK_TREE.generate_dot().render("out/introspection.dot", view=view)
+    if previous_tree:
+        pycram.task.TASK_TREE.generate_dot().render("out/introspection_optimized", format="png", view=view)
+    else:
+        pycram.task.TASK_TREE.generate_dot().render("out/introspection", format="png", view=view)
+    previous_tree = pycram.task.TASK_TREE
 
 @with_tree
 def prospection_demo(view=False):
@@ -102,6 +105,7 @@ def prospection_demo(view=False):
     ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
     robot_position = reach_position_generator(ObjectDesignator([]))  # "Hack" to have the right position right away
     ActionDesignator(NavigateDescription(target_position=next(robot_position)[0])).perform()
+    counter = 0
     while True:
         with SimulatedTaskTree() as st:
             try:
@@ -118,13 +122,16 @@ def prospection_demo(view=False):
             except StopIteration:
                 print("No more retries left.")
                 return
+            finally:
+                st.simulated_root.generate_dot().render("out/prospection_st_"+str(counter))
+                counter += 1
     ActionDesignator(OpenActionDescription(*params[0][0])).perform()
     ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
     ActionDesignator(LookAtActionDescription(target=spoon.get_position())).perform()
     obj = ActionDesignator(DetectActionDescription(ObjectDesignator([('type', 'spoon')]))).perform()
     ActionDesignator(PickUpDescription(obj, arm=Arms.RIGHT)).perform()
     ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
-    pycram.task.TASK_TREE.generate_dot().render("out/prospection.dot", view=view)
+    pycram.task.TASK_TREE.generate_dot().render("out/prospection", view=view)
 
 @with_tree
 def reorganization_demo_plan():
@@ -383,12 +390,14 @@ def full_demo_optimized():
 state = world.save_state()
 # introspection_demo()
 # world.restore_state(*state)
-# prospection_demo()
+# introspection_demo()
+# world.restore_state(*state)
+prospection_demo()
 # world.restore_state(*state)
 # reorganization_demo()
 # world.restore_state(*state)
 # reorganization_demo()
 # world.restore_state(*state)
 # set_table_for_two()
-full_demo_optimized()
+# full_demo_optimized()
 # world.simulate(3)
