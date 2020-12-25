@@ -2,9 +2,9 @@ from pycram.task import with_tree
 from pycram.process_module import ProcessModule
 from pycram.designator import MotionDesignator, ObjectDesignator
 from pycram.action_designator import *
+from pycram.plan_failures import PlanFailure
 from pycram.pr2_description import Arms
-from pycram.pr2_knowledge import reach_position_generator, container_opening_distance_generator,\
-    object_fetching_location_generator, free_arms
+from pycram.pr2_knowledge import reach_position_generator, object_fetching_location_generator, free_arms
 
 from pycram.bullet_world import BulletWorld, filter_contact_points
 
