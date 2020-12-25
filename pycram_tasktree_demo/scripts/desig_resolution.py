@@ -2,10 +2,9 @@ from pycram.pr2_description import Arms, Grasp
 from pycram.designator import DesignatorError, ObjectDesignator
 from pycram.action_designator import SetGripperActionDescription, PickUpDescription, PlaceDescription, \
     NavigateDescription, ParkArmsDescription, DetectActionDescription, LookAtActionDescription, \
-    TransportObjectDescription, OpenActionDescription, CloseActionDescription, TestDescription
+    TransportObjectDescription, OpenActionDescription, CloseActionDescription
 from plans import open_gripper, close_gripper, pick_up, place, navigate, park_arms, detect, look_at, transport, \
-    open_container, close_container, test_plan
-from pycram.bullet_world import BulletWorld
+    open_container, close_container
 
 def ground_set_gripper(self):
     if self.opening == 0:
@@ -95,9 +94,3 @@ LookAtActionDescription.ground = ground_look_at
 TransportObjectDescription.ground = ground_transport
 OpenActionDescription.ground = ground_open
 CloseActionDescription.ground = ground_close
-
-def ground_test(self : TestDescription):
-    self.function = lambda : test_plan()
-    return super(TestDescription, self).ground()
-
-TestDescription.ground = ground_test

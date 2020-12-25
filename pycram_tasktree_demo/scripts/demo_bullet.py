@@ -19,7 +19,6 @@ import desig_resolution
 
 
 resources_path = os.path.join(os.path.dirname(__file__), '..', 'resources')
-# print(resources_path)
 world = BulletWorld("GUI")
 pybullet.resetDebugVisualizerCamera(cameraDistance=5, cameraYaw=30, cameraPitch=-70, cameraTargetPosition=[0,0,0])
 world.set_gravity([0, 0, -9.8])
@@ -51,6 +50,15 @@ milk = Object("milk", "milk", os.path.join(resources_path, "milk.stl"), [1.3, -0
 kitchen.attach(milk, link="iai_fridge_door")
 milk2 = Object("milk2", "milk", os.path.join(resources_path, "milk.stl"), [1.3, -1, 0.8])
 kitchen.attach(milk2, link="iai_fridge_door")
+
+##### LOCATION MARKERS #####
+# h = .1
+# pybullet.addUserDebugText("A", [0, 0, h], textColorRGB=[0, 0, 0], lifeTime=0, textSize=2)
+# pybullet.addUserDebugText("B", [0.5, -0.4, h], textColorRGB=[0, 0, 0], lifeTime=0, textSize=2)
+# pybullet.addUserDebugText("C", [0.6, 0.9, h], textColorRGB=[0, 0, 0], lifeTime=0, textSize=2)
+# pybullet.addUserDebugText("D", [-1.8, 1, h], textColorRGB=[0, 0, 0], lifeTime=0, textSize=2)
+# pybullet.addUserDebugText("E", [-0.4, 1, h], textColorRGB=[0, 0, 0], lifeTime=0, textSize=2)
+
 
 BulletWorld.robot = robot
 
@@ -146,11 +154,11 @@ def reorganization_demo_plan():
 def reorganization_demo(view=False):
     local_state, attachments = world.save_state()
     reorganization_demo_plan()
+    pycram.task.TASK_TREE.generate_dot().render("images/demos/reorganization/1", view=view, format="png")
     world.restore_state(local_state, attachments)
-    pycram.task.TASK_TREE.generate_dot().render("out/reorganization.dot", view=view)
     transform_transport_at_once(pycram.task.TASK_TREE)
     pycram.task.TASK_TREE.execute()
-    pycram.task.TASK_TREE.generate_dot().render("out/reorganization_after.dot", view=view)
+    pycram.task.TASK_TREE.generate_dot().render("images/demos/reorganization/2", view=view, format="png")
 
 def transform_transport_at_once(task_tree):
     place_node = task_tree.get_child_by_path("transport.0/place").copy()
@@ -158,8 +166,29 @@ def transform_transport_at_once(task_tree):
     task_tree.get_child_by_path("transport.1/place").insert_after(place_node)
     task_tree.get_child_by_path("transport.1/park_arms.2").code.args = (Arms.BOTH, )
 
+counters = {
+    False:{
+        "fetch_bowl":0,
+        "deliver_bowl":0,
+        "fetch_spoon":0,
+        "deliver_spoon":0,
+        "transport_milk":0,
+        "transport_cereal":0
+    },
+    True:{
+        "fetch_bowl":0,
+        "deliver_bowl":0,
+        "fetch_spoon":0,
+        "deliver_spoon":0,
+        "transport_milk":0,
+        "transport_cereal":0
+    }
+}
+
 @with_tree
 def set_table(destination="kitchen_island_countertop", view=False, optimize=False):
+    global counters
+
     ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
 
     ## FETCH BOWL
@@ -176,6 +205,7 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
     bowl_desig = ObjectDesignator([('type', 'bowl')])
     while True:
         try:
+            counters[optimize]["fetch_bowl"] += 1
             ActionDesignator(LookAtActionDescription(target=[1.4, 0.925, 0.5])).perform()  # bowl1.get_position())).perform()
             bowl_desig = ActionDesignator(DetectActionDescription(bowl_desig)).perform()
             ActionDesignator(PickUpDescription(bowl_desig, arm=Arms.RIGHT)).perform()
@@ -204,6 +234,8 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
     while True:
         with SimulatedTaskTree():
             try:
+                if optimize:
+                    counters[False]["deliver_bowl"] += 1
                 ActionDesignator(NavigateDescription(target_position=pos, target_orientation=rot)).perform()
                 ActionDesignator(PlaceDescription(bowl_desig, target_location=target_location_bowl, arm=Arms.RIGHT)).perform()
                 break
@@ -212,6 +244,9 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
                 pos, rot = next(deliver_robot_position_generator)
                 target_location_bowl = next(target_location_bowl_gen)
 
+    if optimize:
+        counters[False]["deliver_bowl"] += 1
+        counters[True]["deliver_bowl"] += 1
     ActionDesignator(NavigateDescription(target_position=pos, target_orientation=rot)).perform()
     ActionDesignator(PlaceDescription(bowl_desig, target_location=target_location_bowl, arm=Arms.RIGHT)).perform()
     ActionDesignator(ParkArmsDescription(Arms.RIGHT)).perform()
@@ -228,6 +263,7 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
     spoon_desig = ObjectDesignator([('type', 'spoon')])
     while True:
         try:
+            counters[optimize]["fetch_spoon"] += 1
             ActionDesignator(OpenActionDescription(upper_drawer_desig, Arms.RIGHT, distance=container_opening)).perform()
             ActionDesignator(ParkArmsDescription(Arms.BOTH)).perform()
             ActionDesignator(LookAtActionDescription(target=[1.38, 0.75, 0.75])).perform()  # spoon.get_position())).perform()
@@ -255,6 +291,8 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
     while True:
         with SimulatedTaskTree():
             try:
+                if optimize:
+                    counters[False]["deliver_spoon"] += 1
                 ActionDesignator(NavigateDescription(target_position=pos, target_orientation=rot)).perform()
                 ActionDesignator(PlaceDescription(spoon_desig, target_location=target_location_spoon, arm=Arms.RIGHT)).perform()
                 break
@@ -262,6 +300,9 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
                 print("Placing failed.")
                 target_location_spoon = next(target_location_spoon_gen)
                 pos, rot = next(deliver_robot_position_generator)
+    if optimize:
+        counters[False]["deliver_spoon"] += 1
+        counters[True]["deliver_spoon"] += 1
     ActionDesignator(NavigateDescription(target_position=pos, target_orientation=rot)).perform()
     ActionDesignator(PlaceDescription(spoon_desig, target_location=target_location_spoon, arm=Arms.RIGHT)).perform()
     ActionDesignator(ParkArmsDescription(Arms.RIGHT)).perform()
@@ -273,8 +314,13 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
     target_location_milk = next(target_location_milk_gen)
     try:
         with SimulatedTaskTree():
+            if optimize:
+                counters[False]["transport_milk"] += 1
             ActionDesignator(TransportObjectDescription(milk_desig, arm=Arms.LEFT,
                                                         target_location=target_location_milk)).perform()
+        if optimize:
+            counters[False]["transport_milk"] += 1
+            counters[True]["transport_milk"] += 1
         ActionDesignator(TransportObjectDescription(milk_desig, arm=Arms.LEFT,
                                                     target_location=target_location_milk)).perform()
     except PlanFailure as f:
@@ -287,14 +333,21 @@ def set_table(destination="kitchen_island_countertop", view=False, optimize=Fals
     target_location_cereal = next(target_location_cereal_gen)
     try:
         with SimulatedTaskTree():
+            if optimize:
+                counters[False]["transport_cereal"] += 1
             ActionDesignator(TransportObjectDescription(cereal_desig, arm=Arms.RIGHT,
                                                         target_location=target_location_cereal)).perform()
+        if optimize:
+            counters[False]["transport_cereal"] += 1
+            counters[True]["transport_cereal"] += 1
         ActionDesignator(TransportObjectDescription(cereal_desig, arm=Arms.RIGHT,
                                                     target_location=target_location_cereal)).perform()
     except PlanFailure as f:
         print("Transporting cereal failed.")
 
     ## RENDER ##
+    if optimize:
+        print(counters)
     pycram.task.TASK_TREE.generate_dot().render("out/set_table.dot", view=view)
 
 @with_tree
@@ -312,9 +365,9 @@ def full_demo_optimized():
     world.restore_state(*s)
     print("================ SECOND SET_TABLE_FOR_TWO ===================")
     set_table_for_two(True)
+
     world.restore_state(*s)
     tt : TaskTreeNode = pycram.task.TASK_TREE
-
     ## Re-Organize
     print("================ REORGANIZING ===================")
 
@@ -392,12 +445,12 @@ state = world.save_state()
 # world.restore_state(*state)
 # introspection_demo()
 # world.restore_state(*state)
-prospection_demo()
+
+# prospection_demo()
 # world.restore_state(*state)
+
 # reorganization_demo()
 # world.restore_state(*state)
-# reorganization_demo()
-# world.restore_state(*state)
-# set_table_for_two()
-# full_demo_optimized()
-# world.simulate(3)
+
+full_demo_optimized()
+world.simulate(3)

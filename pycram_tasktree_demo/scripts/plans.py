@@ -6,7 +6,6 @@ from pycram.pr2_description import Arms
 from pycram.pr2_knowledge import reach_position_generator, container_opening_distance_generator,\
     object_fetching_location_generator, free_arms
 
-# Only needed for hack :/
 from pycram.bullet_world import BulletWorld, filter_contact_points
 
 @with_tree
@@ -65,16 +64,6 @@ def detect(object_designator):
 def look_at(target):
     print("Looking at {}.".format(target))
     ProcessModule.perform(MotionDesignator([('type', 'looking'), ('target', target)]))
-
-@with_tree
-def access(container_joint, handle_link, arm, distance, btr_object):
-    print("Accessing container.")
-        # ProcessModule.perform(MotionDesignator([('type', 'accessing'), ('drawer-joint', 'sink_area_left_upper_drawer_main_joint'),
-        #                                         ('drawer-handle', 'sink_area_left_upper_drawer_handle'), ('arm', 'left'), ('distance', 0.3), ('part-of', kitchen)]))
-
-@with_tree
-def seal():
-    pass
 
 @with_tree
 def transport(object_designator, arm, target_location):
@@ -165,15 +154,3 @@ def close_container(object_designator, arm):
     ProcessModule.perform(MotionDesignator(
         [('type', motion_type), ('joint', joint),
          ('handle', handle), ('arm', arm), ('part-of', environment)]))
-
-from pycram.language import failure_handling
-from pycram.plan_failures import PlanFailure
-
-@with_tree
-def test_plan():
-    with failure_handling(5):
-        try:
-            raise PlanFailure
-        except PlanFailure as e:
-            print("ASD")
-            retry()

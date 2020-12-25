@@ -39,7 +39,7 @@ ik_joints = ["fl_caster_rotation_joint", "fl_caster_l_wheel_joint", "fl_caster_r
 
 def _apply_ik(robot, joint_poses):
     """
-    Apllies a list of joint poses calculated by an inverse kinematics solver to a robot
+    Applies a list of joint poses calculated by an inverse kinematics solver to a robot
     :param robot: The robot the joint poses should be applied on
     :param joint_poses: The joint poses to be applied
     :return: None
@@ -109,34 +109,6 @@ class Pr2Place(ProcessModule):
             _apply_ik(robot, inv)
             robot.detach(obj.prop_value("bullet_obj"))
             time.sleep(0.5)
-
-
-# class Pr2Accessing(ProcessModule):
-#     """
-#     This process module responsible for opening drawers to access the objects inside. This works by firstly moving
-#     the end effector to the handle of the drawer. Next, the end effector is moved the respective distance to the back.
-#     This provides the illusion the robot would open the drawer by himself.
-#     Then the drawer will be opened by setting the joint pose of the drawer joint.
-#     """
-#     def _execute(self, desig):
-#         solution = desig.reference()
-#         if solution['cmd'] == 'access':
-#             kitchen = solution['part-of']
-#             robot = BulletWorld.robot
-#             gripper = solution['gripper']
-#             drawer_handle = solution['drawer-handle']
-#             drawer_joint = solution['drawer-joint']
-#             dis = solution['distance']
-#             inv = p.calculateInverseKinematics(robot.id, robot.get_link_id(gripper), kitchen.get_link_position(drawer_handle))
-#             _apply_ik(robot, inv)
-#             time.sleep(0.2)
-#             han_pose = kitchen.get_link_position(drawer_handle)
-#             new_p = [han_pose[0] - dis, han_pose[1], han_pose[2]]
-#             inv = p.calculateInverseKinematics(robot.id, robot.get_link_id(gripper), new_p)
-#             _apply_ik(robot, inv)
-#             print(drawer_joint)
-#             kitchen.set_joint_state(drawer_joint, 0.3)
-#             time.sleep(0.5)
 
 class PR2EnvironmentManipulation(ProcessModule):
     """
@@ -280,7 +252,7 @@ class Pr2Detecting(ProcessModule):
 
 class Pr2MoveTCP(ProcessModule):
     """
-    This process moves the tool center point of either the right or the left arm.
+    This process module moves the tool center point of either the right or the left arm.
     """
     def _execute(self, desig):
         solution = desig.reference()
@@ -333,7 +305,6 @@ class Pr2WorldStateDetecting(ProcessModule):
 pr2_navigation = Pr2Navigation()
 pr2_pick_up = Pr2PickUp()
 pr2_place = Pr2Place()
-# pr2_accessing = Pr2Accessing()
 pr2_park_arms = Pr2ParkArms()
 pr2_move_head = Pr2MoveHead()
 pr2_move_gripper = Pr2MoveGripper()
@@ -358,9 +329,6 @@ def available_process_modules(desig):
 
     if desig.check_constraints([('type', 'place')]):
         return pr2_place
-
-    # if desig.check_constraints([('type', 'accessing')]):
-    #     return pr2_accessing
 
     if desig.check_constraints([('type', 'park-arms')]):
         return pr2_park_arms

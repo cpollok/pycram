@@ -82,15 +82,15 @@ class PickUpDescription(ActionDesignatorDescription):
         self.arm = arm
         self.grasp = grasp
 
-        # Grounded stuff
+        # Grounded attributes
         self.gripper_opening = None
-        self.effort = None
-        self.left_reach_poses = []
-        self.right_reach_poses = []
-        self.left_grasp_poses = []
-        self.right_grasp_poses = []
-        self.left_lift_poses = []
-        self.right_lift_poses = []
+        # self.effort = None
+        # self.left_reach_poses = []
+        # self.right_reach_poses = []
+        # self.left_grasp_poses = []
+        # self.right_grasp_poses = []
+        # self.left_lift_poses = []
+        # self.right_lift_poses = []
 
 class PlaceDescription(ActionDesignatorDescription):
     def __init__(self, object_designator, target_location, arm=None):
@@ -98,13 +98,13 @@ class PlaceDescription(ActionDesignatorDescription):
         self.target_location = target_location
         self.arm = arm
 
-        # Grounded stuff
-        self.left_reach_poses = []
-        self.right_reach_poses = []
-        self.left_place_poses = []
-        self.right_place_poses = []
-        self.left_retract_poses = []
-        self.right_retract_poses = []
+        # Grounded attributes
+        # self.left_reach_poses = []
+        # self.right_reach_poses = []
+        # self.left_place_poses = []
+        # self.right_place_poses = []
+        # self.left_retract_poses = []
+        # self.right_retract_poses = []
 
 class NavigateDescription(ActionDesignatorDescription):
     def __init__(self, object_designator=None, target_location=None, target_position=None, target_orientation=None):
@@ -140,6 +140,3 @@ class CloseActionDescription(ActionDesignatorDescription):
     def __init__(self, object_designator, arm):
         self.object_designator = object_designator
         self.arm = arm
-
-class TestDescription(ActionDesignatorDescription):
-    pass

@@ -30,14 +30,6 @@ def pr2_motion_designators(desig):
                 solutions.append(desig.make_dictionary([('cmd', 'place'), 'target', 'object', ('gripper', 'r_gripper_tool_frame')]))
             solutions.append(desig.make_dictionary([('cmd', 'place'), 'target', 'object', ('gripper', 'l_gripper_tool_frame')]))
 
-    # # Type: accessing
-    # if desig.check_constraints([('type', 'accessing'), 'drawer-joint', 'drawer-handle', 'part-of']):
-    #     if desig.check_constraints([('arm', 'right')]):
-    #         if desig.check_constraints('distance'):
-    #             solutions.append(desig.make_dictionary([('cmd', 'access'), 'drawer-joint', 'drawer-handle', ('gripper', 'r_gripper_tool_frame'), 'distance', 'part-of']))
-    #         solutions.append(desig.make_dictionary([('cmd', 'access'), 'drawer-joint', 'drawer-handle', ('gripper', 'r_gripper_tool_frame'), ('distance', 0.3), 'part-of']))
-    #     solutions.append(desig.make_dictionary([('cmd', 'access'), 'drawer-joint', 'drawer-handle', 'part-of', ('distance', 0.3), ('gripper', 'l_gripper_tool_frame'), 'part-of']))
-
     # Type: opening
     if desig.check_constraints([('type', 'opening-prismatic'), 'joint', 'handle', 'part-of']):
         if desig.check_constraints([('arm', 'right')]):

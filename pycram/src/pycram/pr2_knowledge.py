@@ -55,7 +55,7 @@ def object_fetching_location_generator(object_designator):
     elif object_type is "cereal":
         yield [1.3, 0.8, 0.95]  # Location on counter top
     else:
-        # Otherwise just look everywhere :D
+        # Otherwise just look everywhere
         yield [1.3, 0.8, 0.95]
         yield ObjectDesignator([('type', 'drawer'), ('name', 'sink_area_left_upper_drawer'), ('part-of', "kitchen")])
         yield ObjectDesignator([('type', 'drawer'), ('name', 'sink_area_left_middle_drawer'), ('part-of', "kitchen")])
@@ -75,6 +75,6 @@ def object_placing_location_generator(object_designator, destination):
             yield [-0.9, 1.1, 0.95]
         elif object_type is "spoon":
             yield [-1.35, 0.95, 0.95]
-            yield [-0.9, 1.3, 0.95] #[-0.9, 1.25, 0,95]
+            yield [-0.9, 1.3, 0.95]
     else:
         raise NotImplementedError("This is just a hack for now.")

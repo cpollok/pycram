@@ -8,6 +8,7 @@ GeneratorList -- implementation of generator list wrappers.
 
 TODO
 """
+
 import time
 import pybullet
 from graphviz import Digraph
@@ -25,20 +26,6 @@ class TaskStatus(Enum):
     RUNNING = auto()
     SUCCEEDED = auto()
     FAILED = auto()
-
-# class Task:
-#     def __init__(self, name:str="TEST", parent:"Task"=None, path:str="", code=None):
-#         self.name : str= name
-#         self.parent : "Task" = parent
-#         self.children : List["Task"] = []
-#         self.status : TaskStatus = TaskStatus.CREATED
-#         self.result = None
-#         self.thread = None
-#         self.thread_fun = None
-#         self.path : str = path
-#         self.code = code
-#         self.constraints : List = []
-#         self.message_queue : Queue = Queue()
 
 class Code:
     def __init__(self, body, function=None, args : Tuple=(), kwargs : Dict={}):
@@ -253,23 +240,6 @@ class TaskTreeNode:
         else:
             return [self]
 
-    # def fix_paths(self):
-    #     if not self.parent.path:
-    #         self.parent.fix_path()
-    #     else:
-    #         max_name = -1
-    #         if self.parent:
-    #             for c in self.parent.gen_children_list():
-    #                 if c is self:
-    #                     continue
-    #                 if c.code.function == self.code.function:
-    #                     max_name = max(max_name, int(c.path[-1]))
-    #             self.path = '/'.join([self.parent.path, self.code.function.__name__]) + str(max_name+1)
-    #         else:
-    #             self.path = self.code.function.__name__
-    #         for c in self.gen_children_list():
-    #             c.fix_path()
-
     def fix_path(self):
         if self.parent and self.parent.path:
             # fix path
@@ -321,18 +291,6 @@ class TaskTreeNode:
             self.set_exec_child_next(node)
         node.fix_path()
 
-    # def replace(self, node):
-    #     self.code = node.code
-    #     self.children = node.children
-    #     # self.exec_child_prev = node.exec_child_prev
-    #     # self.exec_child_next = node.exec_child_next
-    #     self.exec_step = node.exec_step
-    #     self.status = node.status
-    #     self.failure = node.failure
-    #     self.start_time = node.start_time
-    #     self.end_time = node.end_time
-    #     self.fix_path()
-
     def replace_child(self, node, new_node):
         for i in range(len(self.children)):
             child = self.children[i]
@@ -341,6 +299,7 @@ class TaskTreeNode:
                 new_node.parent = self
                 new_node.exec_child_prev = child.exec_child_prev
                 new_node.exec_child_next = child.exec_child_next
+                new_node.fix_path()
                 return True
             elif self.replace_exec_child(node, new_node):
                 return True
@@ -434,37 +393,6 @@ class SimulatedTaskTree:
                 noi = None
         return params
 
-# class TaskTreeExecutionNode(TaskTreeNode):
-#     """
-#     Represents the nodes in the task tree that are not normal children of a TaskTreeNode,
-#     but are still part of the tree in the following way.
-#     A TaskTreeNode always corresponds to a with_tree call in the code. The TaskTree cannot be fundamentally
-#     changed, ie. the TaskTreeNodes have to stay where they are, after the TaskTree is initially created.
-#     But TaskTrees can have TaskTreeExecutionNodes associated with them. One as a previous "execution
-#     child" and one as a next. These associations dictate in which order the nodes are to be executed.
-#     A TaskTreeNode's previous execution child is to be executed before it and the next after it.
-#     The same is true for TaskTreeExecutionNodes.
-#     A TaskTreeExecutionNode itself also can have a previous and next execution child and also a
-#     execution parent that is also either previous or next. A previous execution parent is executed
-#     before the node's previous execution child and a next parent would be executed after the node's
-#     next child.
-#     This defines a execution tree, whose nodes are executed in In-Order.
-#     """
-#     def __init__(self, code=None, parent:"TaskTreeNode"=None, path:str=""):
-#         super(TaskTreeExecutionNode, self).__init__(code, parent, path)
-#         self.exec_parent_prev : Optional["TaskTreeNode"] = None
-#         self.exec_parent_next : Optional["TaskTreeNode"] = None
-#
-#     @staticmethod
-#     def from_super(node : TaskTreeNode):
-#         pass
-
-# def get_task_by_path(path):
-#     try:
-#         return TASK_TREE.get_child_by_path(path)
-#     except AttributeError:
-#         print("WARN - No task tree recorded.")
-
 def move_node_to_path(node, path, where=1):
     """
     Move a node to a path.
@@ -500,7 +428,6 @@ def get_successful_params(nodes : List[TaskTreeNode]):
     return p
 
 def with_tree(fun):
-    @wraps(fun)  # TODO: Check if this is necessary..
     def handle_tree(*args, **kwargs):
         global TASK_TREE
         global CURRENT_TASK_TREE_NODE
@@ -510,8 +437,9 @@ def with_tree(fun):
             CURRENT_TASK_TREE_NODE = TASK_TREE
             result = CURRENT_TASK_TREE_NODE.execute()
         else:
-            new_node = TaskTreeNode(code, CURRENT_TASK_TREE_NODE, '/'.join([CURRENT_TASK_TREE_NODE.path, fun.__name__]))
             if len(CURRENT_TASK_TREE_NODE.children) <= CURRENT_TASK_TREE_NODE.exec_step:
+                new_node = TaskTreeNode(code, CURRENT_TASK_TREE_NODE,
+                                        '/'.join([CURRENT_TASK_TREE_NODE.path, fun.__name__]))
                 CURRENT_TASK_TREE_NODE.add_child(new_node)
             result = CURRENT_TASK_TREE_NODE.execute_child()
         return result
