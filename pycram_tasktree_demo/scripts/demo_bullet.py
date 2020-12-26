@@ -365,8 +365,13 @@ def full_demo_optimized():
     world.restore_state(*s)
     print("================ SECOND SET_TABLE_FOR_TWO ===================")
     set_table_for_two(True)
-
     world.restore_state(*s)
+
+    # Hackfix for strange world reset bug
+    kitchen.attach(bowl1, link="sink_area_left_middle_drawer_main")
+    kitchen.attach(bowl2, link="sink_area_left_middle_drawer_main")
+    kitchen.attach(bowl3, link="sink_area_left_middle_drawer_main")
+
     tt : TaskTreeNode = pycram.task.TASK_TREE
     ## Re-Organize
     print("================ REORGANIZING ===================")
@@ -384,9 +389,9 @@ def full_demo_optimized():
     place_spoon2.code.args = (Arms.LEFT, *place_spoon2.code.args[1:])
     nav_cereal = tt.get_child_by_path("set_table.0/transport.1/navigate.0").copy()
     pickup_cereal = tt.get_child_by_path("set_table.0/transport.1/pick_up.0").copy()
-    pickup_cereal.code.args = (Arms.LEFT, pickup_cereal.code.args[1])
+    pickup_cereal.code.args = (Arms.RIGHT, pickup_cereal.code.args[1])
     place_cereal = tt.get_child_by_path("set_table.0/transport.1/place.0").copy()
-    place_cereal.code.args = (Arms.LEFT, *place_cereal.code.args[1:])
+    place_cereal.code.args = (Arms.RIGHT, *place_cereal.code.args[1:])
 
     ## Non-copied, will need reference
     park_arms = tt.get_child_by_path("set_table.0/park_arms.0").copy()
@@ -408,16 +413,26 @@ def full_demo_optimized():
     # INSERTION
     pickup_bowl1.insert_after(pickup_bowl2)
     place_bowl1.insert_after(nav_bowl2)
+    park_left_arm_after_bowl1_place = park_arms.copy()
+    park_left_arm_after_bowl1_place.code.args = (Arms.RIGHT,)
+    place_bowl1.insert_after(park_left_arm_after_bowl1_place)
     nav_bowl2.insert_after(place_bowl2)
     place_bowl2.insert_after(park_arms.copy())
     opening_spoon_drawer.insert_before(closing_bowl_drawer.copy())
     closing_bowl_drawer.delete()
     pickup_spoon1.insert_after(pickup_spoon2)
     place_spoon1.insert_after(nav_spoon2)
+    park_left_arm_after_spoon1_place = park_arms.copy()
+    park_left_arm_after_spoon1_place.code.args = (Arms.RIGHT,)
+    place_spoon1.insert_after(park_left_arm_after_spoon1_place)
     nav_spoon2.insert_after(place_spoon2)
     place_spoon2.insert_after(park_arms.copy())
     close_fridge.insert_after(nav_cereal)
+    park_left_arm_after_fridge_close = park_arms.copy()
+    park_left_arm_after_fridge_close.code.args = (Arms.LEFT,)
+    close_fridge.insert_after(park_left_arm_after_fridge_close)
     new_closing_spoon_drawer = closing_spoon_drawer.copy()
+    new_closing_spoon_drawer.code.args = (new_closing_spoon_drawer.code.args[0], Arms.RIGHT)
     nav_cereal.insert_after(new_closing_spoon_drawer)
     new_closing_spoon_drawer.insert_after(pickup_cereal)
     closing_spoon_drawer.delete()
